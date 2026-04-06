@@ -1,0 +1,80 @@
+name: Update Myfxbook Sentiment — v1.2
+
+# Runs every hour, 24/7, Mon–Sun.
+#
+# ⚠️  LÍMITE DE API: Myfxbook free tier = 100 requests/24h.
+#     Cada run = 3 calls (login + outlook + logout).
+#     Corriendo cada 60 min × 24h × 7d = 24 runs/día = 72 calls/día ✅ (dentro del límite)
+#     NO usar cada 15 min: 96 runs/día × 3 = 288 calls → excede el límite 2.8x.
+#
+# ✅ Lives in the PUBLIC repo (globalinvesting.github.io) — unlimited free minutes.
+#    No PAT_TOKEN needed: GITHUB_TOKEN with contents: write is enough
+#    because the workflow and output data live in the same repo.
+#
+# SECRETS REQUIRED (set in repo Settings → Secrets → Actions):
+#   MYFXBOOK_EMAIL    — email address of your Myfxbook account
+#   MYFXBOOK_PASSWORD — password of your Myfxbook account
+#
+# OUTPUT: sentiment-data/myfxbook.json (committed to repo, served via GitHub Pages)
+#
+# NOTA: El posicionamiento retail cambia muy lentamente (datos de comunidad acumulados).
+#       Actualizar cada hora es más que suficiente — no hay pérdida de calidad vs 15 min.
+
+on:
+  schedule:
+    - cron: '0 * * * *'    # cada hora en punto, todos los días, toda la semana
+  workflow_dispatch:        # manual trigger desde GitHub UI
+
+concurrency:
+  group: update-myfxbook-sentiment
+  cancel-in-progress: false   # nunca cancelar un fetch en curso — esperar
+
+permissions:
+  contents: write             # necesario para git push al mismo repo
+
+jobs:
+  fetch-myfxbook-sentiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests --break-system-packages
+
+      - name: Create output directory
+        run: mkdir -p sentiment-data
+
+      - name: Fetch Myfxbook community outlook
+        env:
+          MYFXBOOK_EMAIL:    ${{ secrets.MYFXBOOK_EMAIL }}
+          MYFXBOOK_PASSWORD: ${{ secrets.MYFXBOOK_PASSWORD }}
+          SITE_PATH: .
+        run: python3 scripts/fetch_myfxbook_sentiment.py
+
+      - name: Commit and push sentiment data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sentiment-data/myfxbook.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit (data unchanged)"
+            exit 0
+          fi
+          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M UTC')
+          git commit -m "Sentiment update — ${TIMESTAMP}"
+          for i in 1 2 3; do
+            git push && echo "✅ Push succeeded" && exit 0
+            echo "Push rejected (attempt $i) — rebasing..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "❌ All push attempts failed — data not published."
+          exit 1

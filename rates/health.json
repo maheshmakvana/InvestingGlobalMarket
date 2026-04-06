@@ -1,0 +1,66 @@
+{
+  "runTimestamp": "2026-04-06T09:15:50.151424Z",
+  "runDate": "2026-04-06",
+  "frankfurterOk": true,
+  "currencies": {
+    "USD": {
+      "status": "ok",
+      "rate": "3.75",
+      "source": "NYFed-EFFR",
+      "date": "2026-04-02",
+      "issues": []
+    },
+    "EUR": {
+      "status": "ok",
+      "rate": "2",
+      "source": "ECB-SDMX",
+      "date": "2025-06-11",
+      "issues": []
+    },
+    "GBP": {
+      "status": "ok",
+      "rate": "3.75",
+      "source": "BoE-CSV",
+      "date": "2026-04-01",
+      "issues": []
+    },
+    "JPY": {
+      "status": "ok",
+      "rate": "0.75",
+      "source": "BIS-CBPOL",
+      "date": "2026-03-01",
+      "issues": []
+    },
+    "CAD": {
+      "status": "ok",
+      "rate": "2.25",
+      "source": "BoC-Valet",
+      "date": "2026-03-27",
+      "issues": []
+    },
+    "AUD": {
+      "status": "ok",
+      "rate": "4.10",
+      "source": "RBA-HTML",
+      "date": "2026-03-18",
+      "issues": []
+    },
+    "CHF": {
+      "status": "ok",
+      "rate": "0",
+      "source": "BIS-CBPOL",
+      "date": "2026-03-01",
+      "issues": []
+    },
+    "NZD": {
+      "status": "ok",
+      "rate": "2.25",
+      "source": "BIS-CBPOL",
+      "date": "2026-02-01",
+      "issues": []
+    }
+  },
+  "issues": [],
+  "warnings": [],
+  "overallStatus": "ok"
+}
